@@ -1,0 +1,102 @@
+// Include standard font and media definitions
+#include <font.defs>
+#include <media.defs>
+
+// List the fonts that are supported, in this case all standard fonts...
+Font *
+
+// Manufacturer, model name, and version
+Manufacturer "Xiqi"
+Version 1.0
+
+// Each filter provided by the driver...
+//Filter application/vnd.cups-raster 100 rastertofunnyprint
+Filter application/vnd.cups-raster 100 -
+
+//*InputSlot 0 Auto
+//*MediaType 0 Auto
+
+ColorDevice no
+*ColorModel Black k chunky 0
+//ColorModel bi-level k chunky 0
+
+// Supported resolutions
+*Resolution k 1 0 0 0 203dpi
+
+ManualCopies yes
+
+// Supported page sizes
+#media "58x999mm/58mm roll" 58mm 999mm
+#media "48x999mm/48mm roll" 48mm 999mm
+#media "58x60mm/58x60mm" 58mm 60mm
+#media "58x40mm/58x40mm" 58mm 40mm
+#media "58x30mm/58x30mm" 58mm 30mm
+#media "52x34mm/52x34mm" 52mm 34mm
+#media "40x58mm.Fullbleed/40x58mm" 40mm 58mm
+#media "A9Rotated/A9 Long Edge" 148 105
+
+HWMargins 5mm 0 5mm 0
+MediaSize 58x60mm
+*MediaSize 58x40mm
+MediaSize 58x30mm
+MediaSize 58x999mm
+
+HWMargins 2mm 0 2mm 0
+MediaSize 52x34mm
+MediaSize A8
+MediaSize A9Rotated
+
+HWMargins 0 0 0 0
+MediaSize 48x999mm
+MediaSize 40x58mm.Fullbleed
+MediaSize A9
+MediaSize A10
+MediaSize ISOB9
+MediaSize ISOB10
+
+VariablePaperSize yes
+MinSize 15 15
+MaxSize 48mm 999mm
+
+Darkness 0 "0/Extra light"
+Darkness 1 "1/Lighter"
+Darkness 2 "2/Light"
+*Darkness 3 "3/Normal"
+Darkness 4 "4/Dark"
+Darkness 5 "5/Darker"
+Darkness 6 "6/Extra dark"
+
+//UIConstraints "*cupszHalftoneType auto *print-color-mode"
+//UIConstraints "*cupszHalftoneType stochastic *print-color-mode"
+
+// needs ghostscript patch https://github.com/OpenPrinting/libcupsfilters/pull/92
+//Option "print-color-mode/Dithering type" PickOne AnySetup 20
+Option "cupsHalftoneType/Dithering type" PickOne DocumentSetup 20
+*Choice "auto/Default algorithm" ""
+Choice "stochastic/Stochastic algorithm" ""
+Choice "bi-level/Bi-level (label printing)" ""
+// bad results for 203 dpi
+//Choice "foo2zjs/foo2zjs algorithm" ""
+
+//Option "print-color-mode/Dithering type (Poppler)" PickOne DocumentSetup 20
+//*Choice "none/Default algorithm" ""
+//Choice "bi-level/Bi-level (label printing)" ""
+
+// As operating system printing stack in general and CUPS in particular
+// is not designed for endless paper sizes (rolls), detect and skip
+// blank lines from the top and bottom of the page in the filter.
+Option "xiqiSkipBlankLines/Skip blank lines (top and bottom)" PickOne DocumentSetup 20
+Choice "0/Do not skip" "<</AdvanceDistance 0>>setpagedevice"
+Choice "1/On standard page size" "<</AdvanceDistance 1>>setpagedevice"
+*Choice "2/On roll page size (999mm)" "<</AdvanceDistance 2>>setpagedevice"
+Choice "4/On custom page size" "<</AdvanceDistance 4>>setpagedevice"
+Choice "6/On roll and custom page size" "<</AdvanceDistance 6>>setpagedevice"
+Choice "7/Always (compact printing)" "<</AdvanceDistance 7>>setpagedevice"
+
+
+{
+    // Specify the name of the PPD file we want to generate...
+    PCFileName "lx-d2.ppd"
+    ModelName "LX-D2"
+    Attribute "1284DeviceID" "" "MFG:Xiqi;MDL:LX-D02;CMD:funnyprint;"
+}

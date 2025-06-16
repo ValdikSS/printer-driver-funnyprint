@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rastertofunnyprint"
+description = "CUPS driver for Xiqi/DOLEWA FunnyPrint Bluetooth thermal printers"
+version = "1.0"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "ValdikSS", email = "iam@valdikss.org.ru"},
+]
+dependencies = [
+    "bleak"
+]
+
+[project.urls]
+Homepage = "https://github.com/ValdikSS/printer-driver-funnyprint"
+Repository = "https://github.com/ValdikSS/printer-driver-funnyprint.git"
+Issues = "https://github.com/ValdikSS/printer-driver-funnyprint/issues"
+
+[project.scripts]
+rastertofunnyprint = "rastertofunnyprint:cli"
