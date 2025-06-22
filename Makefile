@@ -17,7 +17,7 @@ test-ppd:
 	LC_NUMERIC=C ppdc -t xiqi.drv
 
 clean-python:
-	rm -rf build dist src/rastertofunnyprint.egg-info
+	rm -rf build dist src/rastertofunnyprint.egg-info src/rastertofunnyprint/__pycache__
 
 clean-ppd:
 	rm -rf ppd
