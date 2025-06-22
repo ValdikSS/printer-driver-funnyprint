@@ -14,16 +14,23 @@ Linux CUPS driver for Xiqi/DOLEWA Bluetooth mini thermal printers supported by *
 ## Installation
 
 You'll need Python 3.8 or newer. Tested on Ubuntu 20.04, Ubuntu 22.04, Fedora 41.  
-On Ubuntu 24.04 and newer, you'll need to deal with `externally-managed-environment`.
 
 1. `git clone https://github.com/ValdikSS/printer-driver-funnyprint`
-2. `cd printer-driver-funnyprint && sudo make install`
+2. `cd printer-driver-funnyprint`
+    - Debian/Ubuntu: `sudo apt build-dep . && dpkg-buildpackage -us -uc -nc && sudo apt install ../printer-driver-funnyprint_*_all.deb`
+    - Other distributions: `sudo make install`
 3. Power on the printer
 4. Go to [http://127.0.0.1:631/admin](http://127.0.0.1:631/admin) CUPS web interface
 5. Press "Add printer". You should see `Xiqi LX-D02(FunnyPrint) (Xiqi LX-D02)` or similar printer listed.
 6. Continue adding the printer, selecting **Xiqi → Xiqi LX-D2** driver
 
 ## Uninstallation
+
+Debian/Ubuntu:
+
+`sudo apt remove printer-driver-funnyprint`
+
+Other distributions:
 
 `cd printer-driver-funnyprint && sudo make uninstall`
 

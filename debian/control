@@ -1,0 +1,27 @@
+Source: printer-driver-funnyprint
+Section: unknown
+Priority: optional
+Maintainer: ValdikSS <iam@valdikss.org.ru>
+Rules-Requires-Root: no
+X-Python3-Version: >= 3.8
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-sequence-python3,
+ python3-setuptools,
+ pybuild-plugin-pyproject,
+ python3-all,
+ python3-bleak
+#Testsuite: autopkgtest-pkg-python
+Standards-Version: 4.6.2
+Homepage: https://github.com/ValdikSS/printer-driver-funnyprint
+#Vcs-Browser: https://salsa.debian.org/debian/printer-driver-funnyprint
+#Vcs-Git: https://salsa.debian.org/debian/printer-driver-funnyprint.git
+
+Package: printer-driver-funnyprint
+Architecture: all
+Multi-Arch: foreign
+X-Python3-Version: >= 3.8
+Depends:
+ ${python3:Depends},
+ ${misc:Depends},
+Description: CUPS driver for Xiqi/DOLEWA FunnyPrint Bluetooth thermal printers
