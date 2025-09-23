@@ -1,4 +1,5 @@
 build
 dist
+result
 src/*.egg-info
 src/*/__pycache__
