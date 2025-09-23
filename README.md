@@ -24,11 +24,53 @@ You'll need Python 3.8 or newer. Tested on Ubuntu 20.04, Ubuntu 22.04, Fedora 41
 5. Press "Add printer". You should see `Xiqi LX-D02(FunnyPrint) (Xiqi LX-D02)` or similar printer listed.
 6. Continue adding the printer, selecting **Xiqi → Xiqi LX-D2** driver
 
+#### NixOS instructions (Flake-Based)
+
+This repository contains a Nix Flake exposing the CUPS driver as a package and NixOS module.
+You can access them using the following attribute paths:
+
+ * NixOS module: `funnyprint.nixosModules.funnyprint`
+ * Package: `funnyprint.packages.${pkgs.system}.funnyprint`
+
+1. Change your flake.nix file accordingly:
+    ```nix
+    {
+      description = "NixOS configuration";
+
+      inputs = {
+        nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+        funnyprint = {
+          url = "github:ValdikSS/printer-driver-funnyprint";
+          inputs.nixpkgs.follows = "nixpkgs":
+        };
+      };
+
+      outputs = { nixpkgs, funnyprint, ... }: {
+        nixosConfigurations = {
+          hostname = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            modules = [
+              ./configuration.nix
+              funnyprint.nixosModules.funnyprint
+            ];
+          };
+        };
+      };
+    }
+    ```
+2. Update your flake.lock file: `nix flake update funnyprint`
+3. Rebuild your NixOS system: `nixos-rebuild switch --flake <flake-uri>`
+4. Continue at [step 3](#installation) of the regular install instructions
+
 ## Uninstallation
 
 Debian/Ubuntu:
 
 `sudo apt remove printer-driver-funnyprint`
+
+NixOS (Flake-Based):
+
+Simply remove the `funnyprint` input and module from your flake and rebuild your system.
 
 Other distributions:
 
