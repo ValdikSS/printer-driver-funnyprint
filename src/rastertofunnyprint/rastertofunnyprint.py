@@ -253,6 +253,8 @@ class FunnyPackets:
     PRINTING_FINISHED = b"\x5a\x06"
     LOST_PACKET = b"\x5a\x05"
 
+    STATIC_CHALLENGE = b"\x00" * 10
+
     @staticmethod
     def hardware_info():
         return b"\x5a\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -274,21 +276,42 @@ class FunnyPackets:
         3. The client sends challenge-response in "5a 0b" packet
 
         However, the protocol is completely flawed, which allows to
-        just hard-code static client-challenge and challenge-response,
-        without even using printer-challenge data.
-        It operates on byte-basis (each challenge byte corresponds to
-        other static response byte, regardless of other bytes or
-        the position).
+        just hard-code static client-challenge and generate final response
+        from the MAC address only, without even using printer-challenge data.
+        This is most likely not a print-challenge at all, but a garbage RAM
+        data due to incorrect packet length.
+
+        The protocol operates on byte-basis (each challenge byte corresponds to
+        other response byte, regardless of other bytes or the position), that's
+        why we use only the first byte out of 10, and multiply it.
         """
-        return b"\x5a\x0a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        return b"\x5a\x0a" + FunnyPackets.STATIC_CHALLENGE
 
     @staticmethod
-    def reply_0b():
+    def reply_0b(bdaddr):
         """Handshake phase 2 - response
 
         The second step of pointless authentication.
         """
-        return b"\x5a\x0b\x07\x07\x07\x07\x07\x07\x07\x07\x07\x07"
+
+        def crc16_xmodem(data):
+            """CRC16-XMODEM implementation matching the native application"""
+            crc = 0
+            for byte in data:
+                for i in range(8):
+                    bit = (byte >> (7 - i)) & 1
+                    c15 = (crc >> 15) & 1
+                    crc <<= 1
+                    crc &= 0xFFFF
+                    if c15 ^ bit:
+                        crc ^= 0x1021
+            return crc
+
+        mac_hex = bdaddr.replace(':', '')
+        payload_bytes = FunnyPackets.STATIC_CHALLENGE[0:1] + binascii.unhexlify(mac_hex)
+        response = (crc16_xmodem(payload_bytes) >> 8) & 0xFF
+
+        return b"\x5a\x0b" + bytes([response]) * 10
 
     @staticmethod
     def print_event(num_lines, end=False):
@@ -323,8 +346,9 @@ class FunnyBluetooth:
     WRITE_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"
     READ_UUID = "0000ffe2-0000-1000-8000-00805f9b34fb"
 
-    def __init__(self, client):
+    def __init__(self, client, bdaddr):
         self.client = client
+        self.bdaddr = bdaddr
         # "Message box" for handshake process
         self.msgbox_handshake = asyncio.Queue()
         # "Message box" for handling lost packets
@@ -344,7 +368,7 @@ class FunnyBluetooth:
         # handshake
         await self.write(FunnyPackets.random_0a())
         await self.msgbox_handshake.get()
-        await self.write(FunnyPackets.reply_0b())
+        await self.write(FunnyPackets.reply_0b(self.bdaddr))
         handshake_result = await self.msgbox_handshake.get()
         if handshake_result[2] == 0x01:
             print("DEBUG: Handshake successful", file=sys.stderr)
@@ -461,7 +485,7 @@ async def main():
 
     try:
         async with BleakClient(bdaddr) as client:
-            funny = FunnyBluetooth(client)
+            funny = FunnyBluetooth(client, bdaddr)
             await funny.configure()
             print("STATE: -connecting-to-device", file=sys.stderr)
 
