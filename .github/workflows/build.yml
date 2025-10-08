@@ -1,0 +1,33 @@
+name: Deb package
+
+on:
+  push:
+    paths:
+      - 'src/**'
+  pull_request:
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+      - name: Declare short commit variable
+        id: vars
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Create deb
+        run: |
+          sudo rm -f /var/lib/man-db/auto-update
+          sudo mv /usr/local{,_}
+          sudo apt build-dep .
+          dpkg-buildpackage -nc
+          mv ../printer-driver-funnyprint_*_all.deb printer-driver-funnyprint-${{ steps.vars.outputs.sha_short }}.deb
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: printer-driver-funnyprint-${{ steps.vars.outputs.sha_short }}
+          path: printer-driver-funnyprint-${{ steps.vars.outputs.sha_short }}.deb
