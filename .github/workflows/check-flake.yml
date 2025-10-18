@@ -1,0 +1,31 @@
+name: Check flake build
+
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'flake.*'
+      - 'pyproject.toml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'flake.*'
+      - 'pyproject.toml'
+
+jobs:
+  check-flake:
+    strategy:
+      fail-fast: false
+      matrix:
+        system:
+          - x86_64-linux
+          - aarch64-linux
+    runs-on: >-
+      ${{ (matrix.system == 'x86_64-linux' && 'ubuntu-latest')
+      || (matrix.system == 'aarch64-linux' && 'ubuntu-24.04-arm') }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: Defelo/nixpkgs-review-gha/.github/actions/setup-nix@main
+        with:
+          system: ${{ matrix.system }}
+      - run: nix build --keep-going -L path:.#funnyprint
