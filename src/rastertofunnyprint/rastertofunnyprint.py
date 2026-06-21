@@ -235,6 +235,9 @@ class FunnyReader(CUPSRasterReader):
                     blank_lines = 0
                 yield printer_line
 
+        if skip_blank_lines:
+            # Print 2 additional blank lines to prevent cropping from the bottom
+            yield b"\x00"*96
         print("DEBUG: skipped", top_blank_lines*2, "top and", blank_lines*2, "bottom blank lines",
               file=sys.stderr)
 
